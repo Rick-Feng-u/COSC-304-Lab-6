@@ -238,8 +238,13 @@ class EnrollDB:
     def query1(self):
         """Return the list of students (id and name) that have not registered in any course section. Hint: Left join can be used instead of a subquery."""
 
-        # TODO: Execute the query and return a cursor
-        return None
+        sql = """SELECT S.sid, sname
+        FROM student AS S LEFT JOIN enroll AS E ON S.sid = E.sid
+        WHERE E.sid IS NULL
+        """
+        cursor = self.cnx.cursor()
+        cursor.execute(sql)
+        return cursor
 
     def query2(self):
         """For each student return their id and name, number of course sections registered in (called numcourses), and gpa (average of grades). 
@@ -247,7 +252,16 @@ class EnrollDB:
         Order by GPA descending then student name ascending and show only the top 5."""
 
          # TODO: Execute the query and return a cursor
-        return None
+        sql = """SELECT S.sid, sname, COUNT(cnum) AS numcourses, AVG(grade) AS  gpa
+        FROM student AS S LEFT JOIN enroll AS E ON S.sid = E.sid
+        WHERE (E.sid IS NULL OR gpa > 3.1) AND birthdate > date('1992-03-15')
+        GROUP BY S.sid
+        ORDER BY gpa DESC, sname ASC
+        LIMIT 5
+        """
+        cursor = self.cnx.cursor()
+        cursor.execute(sql)
+        return cursor
 
     def query3(self):
         """For each course, return the number of sections (numsections), total number of students enrolled (numstudents), average grade (avggrade), and number of distinct professors who taught the course (numprofs).
@@ -256,7 +270,14 @@ class EnrollDB:
             cnum, numsections, numstudents, avggrade, numprof"""
 
          # TODO: Execute the query and return a cursor
-        return None
+        sql = """SELECT S.cnum, COUNT(DISTINCT (S.secnum)) AS numsections, COUNT(sid) AS numstudents, AVG(grade) AS avggrade, COUNT(DISTINCT (pname)) AS numprofs
+        FROM section AS S LEFT JOIN enroll AS E ON S.cnum = E.cnum and S.secnum = E.secnum
+        WHERE (S.cnum LIKE 'CHEM%' OR S.cnum LIKE 'COSC%') AND pname IS NOT NULL
+        GROUP BY S.cnum
+        """
+        cursor = self.cnx.cursor()
+        cursor.execute(sql)
+        return cursor
 
     def query4(self):
         """Return the students who received a higher grade than their course section average in at least two courses. Order by number of courses higher than the average and only show top 5.
